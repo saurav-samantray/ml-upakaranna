@@ -21,6 +21,7 @@ services:
     networks:
       - network-backend
       - network-frontend
+      - network-frontend-old
 
   frontend:
     stdin_open: true
@@ -37,6 +38,19 @@ services:
       - network-frontend
     environment:
       - CHOKIDAR_USEPOLLING=true
+
+  frontend_old:
+    image: node:13.2.0
+    command: ["/src/client_old/dev-nuxt.sh"]
+    volumes:
+      - .:/src
+      - node_modules:/src/client_old/node_modules
+    ports:
+      - 3001:3000
+    depends_on:
+      - backend
+    networks:
+      - network-frontend-old
 
   postgres:
     image: postgres:12.0-alpine
@@ -57,3 +71,4 @@ volumes:
 networks:
   network-backend:
   network-frontend:
+  network-frontend-old:

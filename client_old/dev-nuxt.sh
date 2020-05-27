@@ -3,7 +3,7 @@
 set -o errexit
 
 root="$(dirname "$0")/.."
-app="${root}/client"
+app="${root}/client_old"
 
 (
   cd "${app}"
@@ -13,8 +13,9 @@ app="${root}/client"
     npm install
   fi
 
-  echo "Starting frontend server"
-  #npm run lintfix
+  echo "Installing dependencies"
   npm install --no-package-lock
-  npm start
+  echo "Starting frontend server"
+  npm run lintfix
+  npm run dev
 )
