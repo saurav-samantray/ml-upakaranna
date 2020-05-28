@@ -4,6 +4,7 @@ import itertools
 import json
 import re
 from collections import defaultdict
+import logging
 
 import conllu
 from chardet import UniversalDetector
@@ -13,11 +14,14 @@ from colour import Color
 import pyexcel
 from rest_framework.renderers import JSONRenderer
 from seqeval.metrics.sequence_labeling import get_entities
+from spacy.tokenizer import Tokenizer
+from spacy.lang.en import English
 
 from .exceptions import FileParseException
 from .models import Label
 from .serializers import DocumentSerializer, LabelSerializer
 
+logger = logging.getLogger(__name__)
 
 def extract_label(tag):
     ptn = re.compile(r'(B|I|E|S)-(.+)')
@@ -453,6 +457,35 @@ class CSVPainter(JSONPainter):
             annotations = d.pop('annotations')
             for a in annotations:
                 res.append({**d, **a})
+        return res
+
+class CoNLLPainter(JSONPainter):
+
+    def __init__(self,labels):
+        self.labels = labels
+
+    def paint(self, documents):
+        nlp = English()
+        tokenizer = Tokenizer(nlp.vocab)
+        data = JSONPainter.paint_labels(documents, self.labels)
+        res = ""
+        for d in data:        
+            #entities = {"entities":[]}       
+            json_line = d
+            tokens = tokenizer(json_line["text"])
+            for token in tokens:
+                #logger.info(token,token.idx)
+                #logger.info(json_line)
+                labelFound = False
+                for label in json_line["labels"]:
+                    #print(label[0],label[1])
+                    if label[0] <= token.idx and label[1] >= token.idx:
+                        labelFound = True
+                        res = res + token.text.strip('.')+"\t"+label[2]+"\n"
+                if not labelFound:
+                    res = res + token.text.strip('.')+"\tO\n"
+            res = res + "\n\n"
+        #logger.info(res[0:10])
         return res
 
 

@@ -26,7 +26,7 @@ from .serializers import ProjectSerializer, LabelSerializer, DocumentSerializer,
 from .serializers import ProjectPolymorphicSerializer, RoleMappingSerializer, RoleSerializer
 from .utils import CSVParser, ExcelParser, JSONParser, PlainTextParser, CoNLLParser, iterable_to_io
 from .utils import JSONLRenderer
-from .utils import JSONPainter, CSVPainter
+from .utils import JSONPainter, CSVPainter, CoNLLPainter
 
 IsInProjectReadOnlyOrAdmin = (IsAnnotatorAndReadOnly | IsAnnotationApproverAndReadOnly | IsProjectAdmin)
 IsInProjectOrAdmin = (IsAnnotator | IsAnnotationApprover | IsProjectAdmin)
@@ -406,7 +406,7 @@ class TextDownloadAPI(APIView):
         format = request.query_params.get('q')
         project = get_object_or_404(Project, pk=self.kwargs['project_id'])
         documents = project.documents.all()
-        painter = self.select_painter(format)
+        painter = self.select_painter(format,project)
         # json1 format prints text labels while json format prints annotations with label ids
         # json1 format - "labels": [[0, 15, "PERSON"], ..]
         # json format - "annotations": [{"label": 5, "start_offset": 0, "end_offset": 2, "user": 1},..]
@@ -417,11 +417,13 @@ class TextDownloadAPI(APIView):
             data = painter.paint(documents)
         return Response(data)
 
-    def select_painter(self, format):
+    def select_painter(self, format,project):
         if format == 'csv':
             return CSVPainter()
         elif format == 'json' or format == "json1":
             return JSONPainter()
+        elif format == 'conll':
+            return CoNLLPainter(project.labels.all())
         else:
             raise ValidationError('format {} is invalid.'.format(format))
 
