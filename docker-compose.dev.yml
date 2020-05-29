@@ -14,14 +14,17 @@ services:
       DATABASE_URL: "postgres://doccano:doccano@postgres:5432/doccano?sslmode=disable"
       ALLOW_SIGNUP: "False"
       DEBUG: "True"
+      DJANGO_ALLOWED_HOSTS: localhost 127.0.0.1 [::1]
+      CELERY_BROKER: redis://redis:6379/0
+      CELERY_BACKEND: redis://redis:6379/0
     ports:
       - 8000:8000
     depends_on:
       - postgres
+      - redis
     networks:
       - network-backend
       - network-frontend
-      - network-frontend-old
 
   frontend:
     stdin_open: true
@@ -39,19 +42,6 @@ services:
     environment:
       - CHOKIDAR_USEPOLLING=true
 
-  frontend_old:
-    image: node:13.2.0
-    command: ["/src/client_old/dev-nuxt.sh"]
-    volumes:
-      - .:/src
-      - node_modules:/src/client_old/node_modules
-    ports:
-      - 3001:3000
-    depends_on:
-      - backend
-    networks:
-      - network-frontend-old
-
   postgres:
     image: postgres:12.0-alpine
     volumes:
@@ -63,12 +53,32 @@ services:
     networks:
       - network-backend
 
+  redis:
+    image: redis:5-alpine
+    ports:
+      - 6379:6379
+    volumes:
+        - redis_data:/data
+    networks:
+      - network-backend
+
+  celery:
+    image: upakaranna-backend
+    command: celery worker --app app --loglevel=info
+    volumes:
+      - .:/src
+      - venv:/src/venv
+    depends_on:
+      - redis
+    networks:
+      - network-backend
+
 volumes:
   postgres_data:
+  redis_data:
   node_modules:
   venv:
 
 networks:
   network-backend:
   network-frontend:
-  network-frontend-old:
