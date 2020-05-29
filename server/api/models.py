@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.staticfiles.storage import staticfiles_storage
+from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 from polymorphic.models import PolymorphicModel
 
@@ -206,6 +207,17 @@ def add_linked_annotation(sender, instance, created, **kwargs):
     projectInstance = instance.project
     if projectInstance:
         logger.info(projectInstance)
+
+
+class TrainingData(models.Model):
+    text = models.TextField()
+    meta = models.TextField(default='{}')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    annotations_approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    labels = JSONField()
+    def __str__(self):
+        return self.text[:50]
 
 
 class Annotation(models.Model):

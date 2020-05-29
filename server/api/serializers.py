@@ -8,7 +8,7 @@ from rest_polymorphic.serializers import PolymorphicSerializer
 from rest_framework.exceptions import ValidationError
 
 
-from .models import Label, Project, Document, RoleMapping, Role
+from .models import Label, Project, Document, RoleMapping, Role, TrainingData
 from .models import TextClassificationProject, SequenceLabelingProject, Seq2seqProject
 from .models import DocumentAnnotation, SequenceAnnotation, Seq2seqAnnotation
 
@@ -63,6 +63,12 @@ class LabelSerializer(serializers.ModelSerializer):
         model = Label
         fields = ('id', 'text', 'prefix_key', 'suffix_key', 'background_color', 'text_color')
 
+
+class TrainingDataSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TrainingData
+        fields = fields = ('id', 'text', 'meta', 'created_at', 'updated_at', 'annotations_approved_by', 'labels')
 
 class DocumentSerializer(serializers.ModelSerializer):
     annotations = serializers.SerializerMethodField()

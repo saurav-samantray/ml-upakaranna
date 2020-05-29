@@ -364,3 +364,14 @@ MODEL_MAP = {
 MODELS = {}
 MODELS['en_core_web_sm'] = spacy.load(MODEL_MAP['en_core_web_sm'])
 MODELS['en_retail_haircare'] = spacy.load(MODEL_MAP['en_retail_haircare'])
+
+
+# Celery related settings 
+#REDIS_URL = 'redis://redis:6379'
+BROKER_URL = 'redis://redis:6379/0'
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_TRACK_STARTED = True

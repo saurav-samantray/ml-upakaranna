@@ -9,7 +9,7 @@ from .views import DocumentList, DocumentDetail
 from .views import AnnotationList, AnnotationDetail
 from .views import TextUploadAPI, TextDownloadAPI, CloudUploadAPI
 from .views import StatisticsAPI
-from .views import ModelAPI
+from .views import ModelAPI, TrainingAPI, TrainingStatus
 from .views import NerAPI
 from .views import RoleMappingList, RoleMappingDetail, Roles
 
@@ -25,6 +25,10 @@ urlpatterns = [
          ModelAPI.as_view(), name='models'),
     path('nlp/ner',
          NerAPI.as_view(), name='ner'),
+    path('nlp/train',
+         TrainingAPI.as_view(), name='train'),
+    path('nlp/train/<str:task_id>',
+         TrainingStatus.as_view(), name='train'),
     path('projects/<int:project_id>', ProjectDetail.as_view(), name='project_detail'),
     path('projects/<str:project_name>', ProjectDetailFromName.as_view(), name='project_detail_from_name'),
     path('projects/<int:project_id>/statistics',

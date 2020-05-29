@@ -11,6 +11,7 @@ ENV PYTHONUNBUFFERED 1
 RUN apt-get update \
     && apt-get install --no-install-recommends -y python3-dev libpq-dev unixodbc-dev
 
+
 # install dependencies
 RUN pip install --upgrade pip setuptools
 COPY ./requirements.txt /app/requirements.txt

@@ -4,6 +4,7 @@ from .models import Label, Document, Project
 from .models import Role, RoleMapping
 from .models import DocumentAnnotation, SequenceAnnotation, Seq2seqAnnotation
 from .models import TextClassificationProject, SequenceLabelingProject, Seq2seqProject
+from .models import TrainingData
 
 
 class LabelAdmin(admin.ModelAdmin):
@@ -11,6 +12,11 @@ class LabelAdmin(admin.ModelAdmin):
     ordering = ('project',)
     search_fields = ('project',)
 
+
+class TrainingDataAdmin(admin.ModelAdmin):
+    list_display = ('text', 'meta')
+    ordering = ('text',)
+    search_fields = ('text',)
 
 class DocumentAdmin(admin.ModelAdmin):
     list_display = ('text', 'project', 'meta')
@@ -54,6 +60,7 @@ class RoleMappingAdmin(admin.ModelAdmin):
     search_fields = ('user',)
 
 
+admin.site.register(TrainingData, TrainingDataAdmin)
 admin.site.register(DocumentAnnotation, DocumentAnnotationAdmin)
 admin.site.register(SequenceAnnotation, SequenceAnnotationAdmin)
 admin.site.register(Seq2seqAnnotation, Seq2seqAnnotationAdmin)

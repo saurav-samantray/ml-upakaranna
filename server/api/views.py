@@ -18,15 +18,20 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser
 from rest_framework_csv.renderers import CSVRenderer
+from celery.result import AsyncResult
+
 
 from .filters import DocumentFilter
 from .models import Project, Label, Document, RoleMapping, Role, SequenceAnnotation
+from .models import TrainingData
 from .permissions import IsProjectAdmin, IsAnnotatorAndReadOnly, IsAnnotator, IsAnnotationApproverAndReadOnly, IsOwnAnnotation, IsAnnotationApprover
 from .serializers import ProjectSerializer, LabelSerializer, DocumentSerializer, UserSerializer
 from .serializers import ProjectPolymorphicSerializer, RoleMappingSerializer, RoleSerializer
+from .serializers import TrainingDataSerializer
 from .utils import CSVParser, ExcelParser, JSONParser, PlainTextParser, CoNLLParser, iterable_to_io
 from .utils import JSONLRenderer
 from .utils import JSONPainter, CSVPainter, CoNLLPainter
+from .task import train
 
 IsInProjectReadOnlyOrAdmin = (IsAnnotatorAndReadOnly | IsAnnotationApproverAndReadOnly | IsProjectAdmin)
 IsInProjectOrAdmin = (IsAnnotator | IsAnnotationApprover | IsProjectAdmin)
@@ -89,6 +94,29 @@ class ModelAPI(APIView):
     def get(self, request, *args, **kwargs):
         available_models = settings.MODEL_MAP.keys()
         return Response(available_models)
+
+class TrainingAPI(APIView):
+    permission_classes = [IsAuthenticated & (IsAnnotationApprover | IsProjectAdmin)]
+
+    def post(self, request, *args, **kwargs):
+        training_datas = TrainingData.objects.all()
+        model_name = self.request.data.get('model_name',None)
+        n_iter = self.request.data.get('iterations',10)
+        TRAIN_DATA = [(item['fields']['text'],{"entities":item['fields']['labels']}) for item in json.loads(serializers.serialize('json',training_datas))]
+        logger.info(TRAIN_DATA)
+
+        task = train.delay(model_name,TRAIN_DATA,n_iter)
+        return Response({"task_id":task.task_id,"status":task.status})
+
+class TrainingStatus(APIView):
+    permission_classes = [IsAuthenticated & (IsAnnotationApprover | IsProjectAdmin)]
+
+    def get(self, request, *args, **kwargs):
+        res = AsyncResult(self.kwargs['task_id'])
+        #logger.info("Submitted task: "+str(task.task_id)+str(task.status))
+        return Response({"task_id":self.kwargs['task_id'],"status":res.status})
+
+
 
 class NerAPI(APIView):
     permission_classes = [IsAuthenticated & (IsAnnotationApprover | IsProjectAdmin)]
