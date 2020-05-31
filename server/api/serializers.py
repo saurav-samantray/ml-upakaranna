@@ -8,7 +8,7 @@ from rest_polymorphic.serializers import PolymorphicSerializer
 from rest_framework.exceptions import ValidationError
 
 
-from .models import Label, Project, Document, RoleMapping, Role, TrainingData
+from .models import Label, Project, Document, RoleMapping, Role, Training, TrainingData
 from .models import TextClassificationProject, SequenceLabelingProject, Seq2seqProject
 from .models import DocumentAnnotation, SequenceAnnotation, Seq2seqAnnotation
 
@@ -218,3 +218,12 @@ class RoleMappingSerializer(serializers.ModelSerializer):
     class Meta:
         model = RoleMapping
         fields = ('id', 'user', 'role', 'username', 'rolename')
+
+class TrainingSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Training
+        fields = ('id', 'name', 'task_id', 'description',
+                  'dataset', 'comments', 'created_at',
+                  'updated_at','user','training_type',
+                  'status','training_loss','total_training_time' )

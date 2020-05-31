@@ -98,25 +98,21 @@ class ModelAPI(APIView):
 class TrainingAPI(APIView):
     permission_classes = [IsAuthenticated & (IsAnnotationApprover | IsProjectAdmin)]
 
+    def get(self, request, *args, **kwargs):
+        res = AsyncResult(self.request.data.get('task_id',None))
+        #logger.info("Submitted task: "+str(task.task_id)+str(task.status))
+        return Response({"task_id":self.request.data.get('task_id',None),"status":res.status})
+
     def post(self, request, *args, **kwargs):
         training_datas = TrainingData.objects.all()
         model_name = self.request.data.get('model_name',None)
-        n_iter = self.request.data.get('iterations',10)
+        n_iter = self.request.data.pop('iterations',10)
+        logger.info(self.request.data)
         TRAIN_DATA = [(item['fields']['text'],{"entities":item['fields']['labels']}) for item in json.loads(serializers.serialize('json',training_datas))]
-        logger.info(TRAIN_DATA)
+        #logger.info(TRAIN_DATA)
 
-        task = train.delay(model_name,TRAIN_DATA,n_iter)
+        task = train.delay(model_name,TRAIN_DATA,n_iter,self.request.user.id,self.request.data)
         return Response({"task_id":task.task_id,"status":task.status})
-
-class TrainingStatus(APIView):
-    permission_classes = [IsAuthenticated & (IsAnnotationApprover | IsProjectAdmin)]
-
-    def get(self, request, *args, **kwargs):
-        res = AsyncResult(self.kwargs['task_id'])
-        #logger.info("Submitted task: "+str(task.task_id)+str(task.status))
-        return Response({"task_id":self.kwargs['task_id'],"status":res.status})
-
-
 
 class NerAPI(APIView):
     permission_classes = [IsAuthenticated & (IsAnnotationApprover | IsProjectAdmin)]

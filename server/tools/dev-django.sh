@@ -19,7 +19,7 @@ apt-get update && apt-get install -y g++ unixodbc-dev # pyodbc build dependencie
 
 echo "Initializing database"
 "${venv}/bin/python" "${app}/manage.py" wait_for_db
-#"${venv}/bin/python" "${app}/manage.py" makemigrations
+"${venv}/bin/python" "${app}/manage.py" makemigrations
 "${venv}/bin/python" "${app}/manage.py" migrate
 "${venv}/bin/python" "${app}/manage.py" create_roles
 

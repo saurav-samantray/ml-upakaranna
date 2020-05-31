@@ -25,6 +25,14 @@ PROJECT_CHOICES = (
     (SEQ2SEQ, 'sequence to sequence'),
 )
 
+CLASSIFICATION = "Classification"
+NER = "NamedEntityRecognition"
+TRAINING_CHOICES = (
+        (CLASSIFICATION,'Classification'),
+        (NER,'Named Entity Recognition')
+    )
+
+
 class Project(PolymorphicModel):
     name = models.CharField(max_length=100)
     description = models.TextField(default='')
@@ -342,3 +350,33 @@ def delete_linked_project(sender, instance, using, **kwargs):
         project = Project.objects.get(pk=projectInstance.pk)
         user.projects.remove(project)
         user.save()
+
+
+class Training(PolymorphicModel):
+    name = models.CharField(max_length=100)
+    task_id = models.CharField(max_length=100)
+    description = models.TextField(default='')
+    dataset = models.TextField(default='')
+    comments = models.TextField(default=None, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    #users = models.ManyToManyField(User, related_name='trainings')
+    user = models.ForeignKey(User, related_name='trainings', on_delete=models.CASCADE,default=None)
+    training_type = models.CharField(max_length=30, choices=TRAINING_CHOICES)
+    status = models.CharField(max_length=100)
+    training_loss = JSONField(default=None, blank=True, null=True)
+    total_training_time = models.FloatField(default=0.0, blank=True, null=True)
+
+
+    def get_absolute_url(self):
+        return reverse('upload', args=[self.id])
+
+    def get_dataset_serializer(self):
+        from .serializers import TrainingSerializer
+        return TrainingSerializer
+
+    def get_dataset_class(self):
+        return Training
+
+    def __str__(self):
+        return self.name
