@@ -1,12 +1,12 @@
 import {combineReducers} from 'redux';
 import headerReducer from "./components/header/headerReducer";
-import loginReducer from "./components/login/loginReducer";
-import projectReducer from "./components/project-list/projectReducer";
+import authReducer from "./components/auth/authReducer";
+import projectReducer from "./components/project/projectReducer";
 import datasetReducer from "./components/dataset/datasetReducer";
 
 const rootReducer = combineReducers({
     headerReducer,
-    loginReducer,
+    authReducer,
     projectReducer,
     datasetReducer
 

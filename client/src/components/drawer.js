@@ -16,11 +16,11 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 
 
 
-import ProjectHomeDefault from './project-home-default/projecthomedefault'
+import ProjectHomeDefault from './project/project-home-default/projecthomedefault'
 import DatasetPage from './dataset/dataset'
 
 
-import { getProject } from './project-list/projectAction'
+import { getProject } from './project/projectAction'
 
 import { useSelector, useDispatch } from 'react-redux';
 
@@ -90,7 +90,8 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: 0,
   },
 }));
-let getProjectFunction
+
+
 export default function SideNavLayout() {
 
   let { path, url } = useRouteMatch();
@@ -99,7 +100,7 @@ export default function SideNavLayout() {
   const selectedProject = useSelector((state) => state.projectReducer.selectedproject);
 
   const dispatch = useDispatch();
-  getProjectFunction = (id) => dispatch(getProject(id));
+  let getProjectAction = (id) => dispatch(getProject(id));
 
   const classes = useStyles();
   const theme = useTheme();
@@ -115,7 +116,7 @@ export default function SideNavLayout() {
 
   useEffect(() => {
     if (!selectedProject) {
-      getProjectFunction(params.projectId)
+      getProjectAction(params.projectId)
     }
   })
 
