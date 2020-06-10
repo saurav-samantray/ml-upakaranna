@@ -6,7 +6,7 @@ const initialState={
     selectedProject:{}
 }
 
-export default function Projectreducer(state=initialState,action) {
+export default function ProjectReducer(state=initialState,action) {
 
         switch(action.type) {
             case actionTypes.FETCH_PROJECTS_LIST:
@@ -15,6 +15,7 @@ export default function Projectreducer(state=initialState,action) {
                     loading:true 
                 }
             case actionTypes.FETCH_PROJECTS_LIST_SUCCESS:
+                console.log(action);
                 return{
                     ...state,
                     projectList:action.response,

@@ -1,7 +1,10 @@
 import  { getProjectsListApi,
             getProjectApi ,
-            createProjectApi
+            createProjectApi,
+            deleteProjectApi
         }  from "../../api/projectsApi";
+
+import { showNotification } from "../utils/notificationbox/notificationAction";
 
 export const GET_PROJECTS = 'GET_PROJECTS'
 export const GET_PROJECT = 'GET_PROJECT'
@@ -17,7 +20,11 @@ export const actionTypes={
 
     CREATE_PROJECT:"CREATE_PROJECT",
     CREATE_PROJECT_SUCCESS:"CREATE_PROJECT_SUCCESS",
-    CREATE_PROJECT_FAILED:"CREATE_PROJECT_FAILED"
+    CREATE_PROJECT_FAILED:"CREATE_PROJECT_FAILED",
+
+    DELETE_PROJECT:"DELETE_PROJECT",
+    DELETE_PROJECT_SUCCESS:"DELETE_PROJECT_SUCCESS",
+    DELETE_PROJECT_FAILED:"DELETE_PROJECT_FAILED"
     
 
 }
@@ -64,9 +71,23 @@ const createProjectFailed = (error) =>({
     error
 })
 
+const deleteProjectAction =()=>({
+    type:actionTypes.DELETE_PROJECT,
+})
+
+const deleteProjectSuccess=(data)=>({
+    type:actionTypes.DELETE_PROJECT_SUCCESS,
+    data
+})
+
+const deleteProjectFailed= (error)=>({
+    type:actionTypes.DELETE_PROJECT_FAILED,
+    error
+})
+
+
 
 export const getProjectsList = ()=>{
-    console.log("test")
     return async dispatch => {
         dispatch(fetchProjectsListAction());
         try{
@@ -116,6 +137,11 @@ export const createProject = (data)=>{
             if(response.status == 201){
                 dispatch(createProjectSuccess(response.data))
                 dispatch(getProjectsList());
+                let notificationData ={
+                    message:`${data.name} created successfully`,
+                    severity:"success"
+                }
+                dispatch(showNotification(notificationData))
             } else{
                 dispatch(fetchProjectFailed(response.error))
                 console.log(response.error)
@@ -127,6 +153,29 @@ export const createProject = (data)=>{
 }
 
 
+export const deleteProject = (id)=>{
+    return async dispatch =>{
+        console.log(id)
+        dispatch(deleteProjectAction());
+        try {
+            const response = await deleteProjectApi(id);
+            if(response.status == 204){
+                dispatch(getProjectsList());
+                let notificationData ={
+                    message:`deleted successfully`,
+                    severity:"info"
+                }
+                dispatch(showNotification(notificationData))
+            }
+            else{
+                console.log(response);
+            }
+
+        } catch (error) {
+            
+        }
+    }
+}
 
     // return async dispatch =>{
     //     try{

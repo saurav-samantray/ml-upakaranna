@@ -1,6 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
-import { lighten, makeStyles } from '@material-ui/core/styles';
+
+import {  makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -9,16 +10,17 @@ import TableHead from '@material-ui/core/TableHead';
 import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
 import TableSortLabel from '@material-ui/core/TableSortLabel';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
+
 import Paper from '@material-ui/core/Paper';
 import Checkbox from '@material-ui/core/Checkbox';
-import IconButton from '@material-ui/core/IconButton';
-import Tooltip from '@material-ui/core/Tooltip';
 import {TextField} from '@material-ui/core'
-import DeleteIcon from '@material-ui/icons/Delete';
-import FilterListIcon from '@material-ui/icons/FilterList';
+
+
 import { withRouter } from 'react-router-dom'
+
+
+
+import { EnhancedTableToolbar } from "./actionToolbar";
 
 function createData(name, description, type) {
   return { name, description, type};
@@ -111,58 +113,6 @@ function EnhancedTableHead(props) {
 }
 
 
-const useToolbarStyles = makeStyles((theme) => ({
-  root: {
-    paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(1),
-  },
-  highlight:
-    theme.palette.type === 'light'
-      ? {
-          color: theme.palette.secondary.main,
-          backgroundColor: lighten(theme.palette.secondary.light, 0.85),
-        }
-      : {
-          color: theme.palette.text.primary,
-          backgroundColor: theme.palette.secondary.dark,
-        },
-  title: {
-    flex: '1 1 100%',
-  },
-}));
-
-const EnhancedTableToolbar = (props) => {
-  const classes = useToolbarStyles();
-  const { numSelected } = props;
-
-  return (
-    <Toolbar
-      className={clsx(classes.root, {
-        [classes.highlight]: numSelected > 0,
-      })}
-    >
-      {numSelected > 0 ? (
-        <Typography className={classes.title} color="inherit" variant="subtitle1" component="div">
-          {numSelected} selected
-        </Typography>
-      ) : (
-        
-        null
-        
-      )}
-
-      {numSelected > 0 ? (
-        <Tooltip title="Delete">
-          <IconButton aria-label="delete">
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      ) : ( null )}
-    </Toolbar>
-  );
-};
-
-
 const useStyles = makeStyles((theme) => ({
   root: {
     width: '100%',
@@ -218,19 +168,19 @@ const CustomTable = (props) => {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = filteredTableData.map((n) => n.name);
+      const newSelecteds = filteredTableData.map((n) => n.id);
       setSelected(newSelecteds);
       return;
     }
     setSelected([]);
   };
 
-  const handleClick = (event, name) => {
-    const selectedIndex = selected.indexOf(name);
+  const handleClick = (event, id) => {
+    const selectedIndex = selected.indexOf(id);
     let newSelected = [];
 
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
+      newSelected = newSelected.concat(selected, id);
     } else if (selectedIndex === 0) {
       newSelected = newSelected.concat(selected.slice(1));
     } else if (selectedIndex === selected.length - 1) {
@@ -243,6 +193,7 @@ const CustomTable = (props) => {
     }
 
     setSelected(newSelected);
+    props.passSelectedItems(newSelected);
   };
 
   const handleChangePage = (event, newPage) => {
@@ -260,7 +211,6 @@ const CustomTable = (props) => {
 
 
   const redirectProject = (row) =>{
-    console.log("row", row)
     props.history.push({
       pathname: `/project/${row.id}`
   })
@@ -286,7 +236,7 @@ const CustomTable = (props) => {
         onChange={(e)=>searchTextinTable(e)}
         fullWidth
       />
-        ) :(<EnhancedTableToolbar numSelected={selected.length} />) 
+        ) :(<EnhancedTableToolbar selectedItems={selected} />) 
       }
         <TableContainer>
           <Table
@@ -309,7 +259,7 @@ const CustomTable = (props) => {
               {filteredTableData && stableSort(filteredTableData, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
-                  const isItemSelected = isSelected(row.name);
+                  const isItemSelected = isSelected(row.id);
                   const labelId = `enhanced-table-checkbox-${index}`;
 
                   return (
@@ -325,7 +275,7 @@ const CustomTable = (props) => {
                       <TableCell padding="checkbox">
                         <Checkbox
                           checked={isItemSelected}
-                          onClick={(event) => handleClick(event, row.name)}
+                          onClick={(event) => handleClick(event, row.id)}
                           inputProps={{ 'aria-labelledby': labelId }}
                         />
                       </TableCell>

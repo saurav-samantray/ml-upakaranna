@@ -22,12 +22,15 @@ const getClient = () =>{
 };
 
 
+
+
 export class ApiClient {
     constructor(url =null){
         this.client = getClient(url);
     }
 
     get(url,conf = {}){
+        console.log(conf)
         return this.client
             .get(url,conf)
             .then(response => Promise.resolve(response))
@@ -52,6 +55,7 @@ export class ApiClient {
                 .catch(error => Promise.reject(error));
     }
     post(url, data ={}, conf = {}){
+        console.log(url,data,conf);
         return this.client
                 .post(url,data,conf)
                 .then(response => Promise.resolve(response))

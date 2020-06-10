@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import CustomTable from '../../utils/table/table';
 import { useDispatch, useSelector } from 'react-redux';
-import { getProjectsList } from '../projectAction';
+import { getProjectsList ,deleteProject} from '../projectAction';
 
 
 const ProjectList = (props) => {
@@ -16,6 +16,9 @@ const ProjectList = (props) => {
         { id: 'type', numeric: false, disablePadding: false, label: 'Type' },
     ];
 
+    const selectedTableItems =(items)=>{
+        props.getSelectedListItems(items)
+    }
 
     useEffect(() => {
         getProjects();
@@ -27,7 +30,7 @@ const ProjectList = (props) => {
     </React.Fragment>   
     }else{
         return <React.Fragment>
-                <CustomTable tableData={projectState.projectList} tableHeader={tableHeader}></CustomTable>
+                <CustomTable tableData={projectState.projectList} tableHeader={tableHeader} deleteAction={deleteProject} passSelectedItems={(props)=>selectedTableItems(props)} ></CustomTable>
             </React.Fragment>
     }
 }

@@ -8,12 +8,14 @@ import {
     CardContent ,
     CardHeader ,
     TextField,
+    IconButton,
     Select,
     Button,MenuItem, Checkbox
     } from '@material-ui/core';
 
 import { useTheme } from '@material-ui/core/styles';
 import { makeStyles } from '@material-ui/core/styles';
+import CloseIcon from '@material-ui/icons/Close';
 
 import { Form, Formik, Field ,ErrorMessage } from 'formik';
 import * as Yup from 'yup';
@@ -53,8 +55,8 @@ const projectTypeOptions =[
 
 
 
-export const ProjectCreateForm = ()=>{
-
+export const ProjectCreateForm = (props)=>{
+    const {handleClose} = props;
     const themes = useTheme();
     const dispatch =useDispatch();
     const createProjectAction= (data)=>dispatch(createProject(data));
@@ -102,7 +104,13 @@ export const ProjectCreateForm = ()=>{
     return ( <React.Fragment>
 
             <Card className={classes.root}>
-                <CardHeader className={classes.header} title="Add Project" />
+                <CardHeader className={classes.header} title="Add Project" 
+                action={
+                    // handleClose
+                    <IconButton aria-label="close" onClick={handleClose}>
+                        <CloseIcon />
+                    </IconButton>
+                }/>
                     <CardContent>
                         <Formik initialValues={initialValues} 
                             validationSchema={
@@ -115,7 +123,7 @@ export const ProjectCreateForm = ()=>{
                                 })
                             } 
                             onSubmit={onFormSubmit} >
-                          {({ values, errors, touched, isSubmitting, isValidating ,handleChange }) => (
+                          {({ values, errors, touched, isSubmitting, isValidating ,handleChange ,setFieldValue }) => (
                             <Form>
                                 <Field name="name" 
                                     as={TextField} 
@@ -142,18 +150,19 @@ export const ProjectCreateForm = ()=>{
                                     name ="project_type"
                                     values = {projectTypeOptions}
                                     selectedValue={values.project_type}
-                                    onChange = {handleChange('project_type')}
-                                        // e =>{
-                                    //     values.project_type = e.target.value;
-                                    //     if(e.target.value == 'DocumentClassification'){
-                                    //         values.resourcetype = 'textClassificationProject';
-                                    //     } else if(e.target.value == 'SequenceLabeling'){
-                                    //         values.resourcetype = 'SequenceLabelingProject';
-                                    //     }else if(e.target.value == 'Seq2seq'){
-                                    //         values.resourcetype = 'Seq2seqProject';
-                                    //     }
-                                    // } }
-                                    value = {values.projectType}
+                                    onChange = { e =>{
+                                        if(e.target.value == 'DocumentClassification'){
+                                            setFieldValue('resourcetype', 'textClassificationProject')
+                                        } else if(e.target.value == 'SequenceLabeling'){
+                                            setFieldValue('resourcetype', 'SequenceLabelingProject')
+                                        }else if(e.target.value == 'Seq2seq'){
+                                            setFieldValue('resourcetype', 'Seq2seqProject')
+                                        }
+                                        setFieldValue('project_type',e.target.value)
+                                    }
+                                   
+                                 }
+                                    // value = {values.projectType}
                                 />
                                 <ErrorMessage name='project_type'></ErrorMessage>  
                                 <label>

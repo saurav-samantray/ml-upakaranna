@@ -11,7 +11,7 @@ services:
       ADMIN_USERNAME: "admin"
       ADMIN_PASSWORD: "password"
       ADMIN_EMAIL: "admin@example.com"
-      DATABASE_URL: "postgres://doccano:doccano@postgres:5432/doccano?sslmode=disable"
+      DATABASE_URL: "postgres://upakaranna:upakaranna@postgres:5432/upakaranna?sslmode=disable"
       ALLOW_SIGNUP: "False"
       DEBUG: "True"
       DJANGO_ALLOWED_HOSTS: localhost 127.0.0.1 [::1]
@@ -47,9 +47,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
-      POSTGRES_USER: "doccano"
-      POSTGRES_PASSWORD: "doccano"
-      POSTGRES_DB: "doccano"
+      POSTGRES_USER: "upakaranna"
+      POSTGRES_PASSWORD: "upakaranna"
+      POSTGRES_DB: "upakaranna"
+    ports:
+      - 5432:5432
     networks:
       - network-backend
 
@@ -65,11 +67,17 @@ services:
   celery:
     image: upakaranna-backend
     command: celery worker --app app --loglevel=info
+    environment:
+      ADMIN_USERNAME: "admin"
+      ADMIN_PASSWORD: "password"
+      ADMIN_EMAIL: "admin@example.com"
+      DATABASE_URL: "postgres://upakaranna:upakaranna@postgres:5432/upakaranna?sslmode=disable"
     volumes:
       - .:/src
       - venv:/src/venv
     depends_on:
       - redis
+      - postgres
     networks:
       - network-backend
 

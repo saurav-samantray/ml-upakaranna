@@ -89,6 +89,7 @@ def main(model=None, output_dir=None, n_iter=10,data=None,train_object=None):
             # batch up the examples using spaCy's minibatch
             batches = minibatch(TRAIN_DATA, size=compounding(4.0, 32.0, 1.001))
             for batch in batches:
+                #logger.info(batch)
                 texts, annotations = zip(*batch)
                 nlp.update(
                     texts,  # batch of texts
@@ -96,6 +97,7 @@ def main(model=None, output_dir=None, n_iter=10,data=None,train_object=None):
                     drop=0.5,  # dropout - make it harder to memorise data
                     losses=losses,
                 )
+            #logger.info(losses)
             etime = time.time()-stime
             training_loss.append(losses['ner'])
             #if itn%(n_iter/3) == 0:

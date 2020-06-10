@@ -360,7 +360,6 @@ class Training(PolymorphicModel):
     comments = models.TextField(default=None, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    #users = models.ManyToManyField(User, related_name='trainings')
     user = models.ForeignKey(User, related_name='trainings', on_delete=models.CASCADE,default=None)
     training_type = models.CharField(max_length=30, choices=TRAINING_CHOICES)
     status = models.CharField(max_length=100)
@@ -380,3 +379,48 @@ class Training(PolymorphicModel):
 
     def __str__(self):
         return self.name
+
+
+class Dataset(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(default='')
+    creator = models.ForeignKey(User, related_name='datasets', on_delete=models.CASCADE,default=None)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    dataset_type = models.CharField(max_length=30, choices=PROJECT_CHOICES)
+    
+    def get_absolute_url(self):
+        return reverse('upload', args=[self.id])
+
+    def get_data_serializer(self):
+        raise NotImplementedError()
+
+    def get_data_class(self):
+        raise NotImplementedError()
+
+    def get_storage(self, data):
+        raise NotImplementedError()
+
+    def __str__(self):
+        return self.name
+
+class ClassificationDataset(models.Model):
+    def get_data_serializer(self):
+        raise NotImplementedError()
+
+    def get_data_class(self):
+        return ClassificationData
+
+
+class Data(models.Model):
+    text = models.TextField()
+    dataset = models.ForeignKey(Dataset, related_name='datas', on_delete=models.CASCADE)
+    meta = models.TextField(default='{}')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    labels = JSONField()
+    def __str__(self):
+        return self.text[:50]
+
+class ClassificationData(Data):
+    label = models.TextField()

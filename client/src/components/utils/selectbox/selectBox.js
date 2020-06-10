@@ -11,9 +11,6 @@ import { makeStyles } from '@material-ui/core/styles';
 
 export const SelectBox = (props)=>{
     const { label, name, values, onChange, selectedValue } = props;
-
-    console.log(props)
-    
     const useStyles = makeStyles((theme) => ({
         root: {
             minWidth: 275,

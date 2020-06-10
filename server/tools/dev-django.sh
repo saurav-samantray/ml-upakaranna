@@ -13,6 +13,11 @@ if [[ ! -f "${venv}/bin/python" ]]; then
   "${venv}/bin/pip" install --upgrade pip setuptools
 fi
 
+echo "Creating virtualenv"
+mkdir -p "${venv}"
+python3 -m venv "${venv}"
+"${venv}/bin/pip" install --upgrade pip setuptools
+
 echo "Installing dependencies"
 apt-get update && apt-get install -y g++ unixodbc-dev # pyodbc build dependencies
 "${venv}/bin/pip" install -r "${app}/requirements.txt"

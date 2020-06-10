@@ -17,7 +17,8 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 
 
 import ProjectHomeDefault from './project/project-home-default/projecthomedefault'
-import DatasetPage from './dataset/dataset'
+import DatasetComponent from './dataset/dataset';
+import LabelsComponent from './labels/labels';
 
 
 import { getProject } from './project/projectAction'
@@ -193,13 +194,11 @@ export default function SideNavLayout() {
             <ProjectHomeDefault></ProjectHomeDefault>
           </Route>
           <Route path={`${path}/dataset`}>
-
-            <DatasetPage></DatasetPage>
+            <DatasetComponent></DatasetComponent>
           </Route>
           <Route path={`${path}/labels`}>
-
-            Labels Page
-</Route>
+            <LabelsComponent></LabelsComponent>
+          </Route>
         </Paper>
 
       </main>
