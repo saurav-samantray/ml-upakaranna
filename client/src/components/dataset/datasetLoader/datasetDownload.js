@@ -77,7 +77,7 @@ export const DatasetDownload =(props)=>{
 
     }));
     const classes = useStyles();
-    let downloadurl
+  
     const onFormDataSubmit = ()=>{
         onFormSubmit();
         // downloadurl = window.URL.createObjectURL(downloadData)

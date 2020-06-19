@@ -2,6 +2,7 @@ import React, { forwardRef, useState, useEffect  } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import MaterialTable from 'material-table';
 import { useParams } from "react-router-dom";
+import { SketchPicker } from 'react-color';
 
 
 import { Grid, Paper ,ButtonGroup,Button,Icon,IconButton, Chip} from '@material-ui/core';
@@ -12,8 +13,9 @@ import { AddBox, ArrowDownward,
         SaveAlt,Search,ViewColumn } from "@material-ui/icons";
 
 
-import {fetchLabels} from "./labelsAction";
+import {fetchLabels,patchLabel, deleteLabel} from "./labelsAction";
 import { LabelActionBar } from './labelsActionBar/labelsActionBar';
+import  { ColorSelectorElem }  from "./colorSelector";
 
 const tableIcons = {
     Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -47,8 +49,23 @@ const tableIcons = {
     let labelsState = useSelector((state)=>state.labelReducer);
     
     let [selectedList,setSelectedList] = useState([]);
-    let[dataLimit,setDataLimit]=useState(10);
-    let[dataOffset,setOffsetLimit]=useState(0)
+    let [dataLimit,setDataLimit]=useState(10);
+    let [dataOffset,setOffsetLimit]=useState(0)
+ 
+
+
+    const setColorChange = (color,data) => {
+        let payload={
+            background_color:color,
+            id:data.id,
+            projectId:params.projectId
+
+        }
+        console.log(data);
+
+        dispatch(patchLabel(payload))
+      };
+    
 
 
     const updateSelectedList = (list)=>{
@@ -58,14 +75,9 @@ const tableIcons = {
     }
    
     const deleteSelectItems = (event,items)=>{
-        let tablePayload={
-            projectId:params.projectId,
-            limit:dataLimit,
-            offset:dataOffset
-        }
-        // items.map(item=>{
-        //     dispatch(deleteDataset(params.projectId,item.id,tablePayload))
-        // })
+        items.map(item=>{
+            dispatch(deleteLabel(item.id,params.projectId))
+        })
         
    
 
@@ -94,18 +106,19 @@ const tableIcons = {
         },
         BtnGrpPaper: {
           marginTop: '72px',
-          // marginBottom: theme.spacing(2),
-          // margin: theme.spacing(2),
+          marginBottom: theme.spacing(2),
+          margin: theme.spacing(2),
           padding:'1vh',
       },
       inputFiles: {
           display: 'none',
         },
 
+
+
   }));
 
   const classes = useStyles();
-
 
 
 
@@ -118,13 +131,8 @@ const tableIcons = {
                 if(props.action.icon === 'annotate'){
                     
                     return(
-                    <Chip
-                    onClick={(event) => props.action.onClick(event, props.data)}
-                    // variant="contained"
-                    style={{backgroundColor:props.data.background_color,color:props.data.text_color }}
-                    label={props.data.background_color}
-                    />
-                
+                   
+                        <ColorSelectorElem elementProps={props} colorChangeAction ={(color,data)=>setColorChange(color,data)}/>
                     
                     )
                 }
@@ -147,7 +155,8 @@ const actions = [
         tooltip: 'annotate',
         position:'row',
         onClick: (event, rowData) => {
-            this.onEditClick(null, rowData._id);
+            // onEditClick(null, rowData);
+            // handleColorPickerClick();
         }
     },
     {
@@ -164,7 +173,12 @@ const actions = [
     //  searchFieldStyle: {
     //      color: "#fff"
     //  },
-     selection: true,
+    actionsCellStyle:{
+        minWidth:"240px",
+        
+    }
+    ,
+    selection: true,
  };
 
  const editable= {

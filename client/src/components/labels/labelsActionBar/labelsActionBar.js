@@ -7,6 +7,12 @@ import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import CreateIcon from '@material-ui/icons/Create';
 
 
+import{ createLabel ,uploadLabel,downloadLabel } from "../labelsAction";
+import { CreateLabel } from "./createLabel";
+import { ImportLabel } from "./importLabel";
+
+
+
 
 import {
          ButtonGroup,
@@ -52,6 +58,7 @@ import { makeStyles } from '@material-ui/core/styles';
     const classes = useStyles();
     const [open, setOpen] = React.useState(false);
     const [modalType,setModalType] =useState("");
+    const [files ,setFiles] =useState([]);
 
     const handleOpen = (type) => {
         setOpen(true);
@@ -65,30 +72,41 @@ import { makeStyles } from '@material-ui/core/styles';
 
 
 
-    const onUploadFormSubmit =()=>{
-    
-     
-        let tablePayload={
-                projectId:params.projectId,
-                limit:limit,
-                offset:offset
-            }
-        // dispatch(uploadDataset(data,params.projectId,tablePayload))
-       
-       
+    const handleImportLabel =(inputFiles)=>{
+        console.log(inputFiles)  
+        setFiles(inputFiles)
+        
     }
-    const onDownloadFormSubmit =()=>{
-       
 
+    const onCreateFormSubmit =(data)=>{
+        let payload ={
+            background_color: data.background_color,
+            prefix_key: data.prefix_key,
+            projectId: params.projectId,
+            suffix_key: data.suffix_key,
+            text: data.text,
+            text_color: "#ffffff" ,
+        }
+        dispatch(createLabel(payload))
+       
     }
+
+
+     const onImportFormSubmit=()=>{
+        dispatch(uploadLabel(files,params.projectId));  
+     }
     
     
-    const cancelUpload=()=>{
+    const cancelImport=()=>{
         setOpen(false);
 
     }
-    const cancelDownload=()=>{
+    const cancelCreate=()=>{
         setOpen(false);
+    }
+    const downloadLabelClick = () =>{
+        console.log("test",params.projectId)
+        dispatch(downloadLabel(params.projectId))
     }
 
      return<React.Fragment>
@@ -97,7 +115,7 @@ import { makeStyles } from '@material-ui/core/styles';
                      variant="contained"
                      color="default"
                      className={classes.button}
-                     onClick={()=>handleOpen('uploadModal')}
+                     onClick={()=>handleOpen('createModal')}
                      startIcon={<CreateIcon />}
                     >
                        Create label
@@ -116,7 +134,7 @@ import { makeStyles } from '@material-ui/core/styles';
                         variant="contained"
                         color="default"
                         className={classes.button}
-                        onClick={()=>handleOpen('downloadModal')}
+                        onClick={downloadLabelClick}
                         startIcon={<CloudDownloadIcon />}
                     >
                         Export label
@@ -127,28 +145,25 @@ import { makeStyles } from '@material-ui/core/styles';
                     <Modal
                     className={classes.Modal } 
                                 open={open}
-                                onClose={modalType =='downloadModal' ? cancelDownload : cancelUpload}
+                                onClose={modalType =='createModal' ? cancelCreate : cancelImport}
                                 aria-labelledby="simple-modal-title"
                                 aria-describedby="simple-modal-description"
                                 >
                                 {
-                                // modalType =='uploadModal'?
-                                //   <DatasetUpload 
-                                //   cancelUpload={cancelUpload}
-                                //   onFormSubmit={onUploadFormSubmit}
-                                //   handleChange={handleImportFileChange}
-                                //   setDocType={setDocType}
-                                //   setFiles ={setFiles}
-                                //   docType ={docType}
-                                //   files={files}
-                                //    />
-                                //    : 
-                                //   <DatasetDownload
-                                //     cancelDownload ={cancelDownload}
-                                //     onFormSubmit ={(downloadLinkRef)=>onDownloadFormSubmit(downloadLinkRef)}
-                                //     setDocType={setDocType}
-                                //     docType={docType}
-                                //     />
+                                modalType =='createModal'?
+                                  <CreateLabel 
+                                  cancelCreate={cancelCreate}
+                                  onFormSubmit={onCreateFormSubmit}
+                                   />
+                                   : 
+                                  <ImportLabel
+                                    cancelImport ={cancelImport}
+                                    onFormSubmit ={onImportFormSubmit}
+                                    handleChange={handleImportLabel}
+                                    setFiles ={setFiles}
+                                    files={files}
+                                    
+                                    />
                                    
                                 }
                                         

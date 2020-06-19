@@ -28,7 +28,7 @@ export const deleteProjectApi = id =>{
 
 
 
-export const getDatasetApi = (data)=>{
+export const getDatasetApi = data =>{
     return client.get(`/projects/${data.projectId}/docs?limit=${data.limit}&offset=${data.offset}`)
 }
 export const uploadDatasetApi =(data,projectId)=>{
@@ -50,6 +50,29 @@ export const deleteDatasetApi  = (projectId,datasetId)=>{
 
 
 
-export const getLabelsApi = (data)=>{
+export const getLabelsApi = data =>{
     return client.get(`/projects/${data.projectId}/labels`)
+}
+
+export const createLabelApi = data =>{
+    return client.post(`/projects/${data.projectId}/labels`,data)
+}
+
+export const patchLabelApi = (data) =>{
+    return client.patch(`/projects/${data.projectId}/labels/${data.id}`,data)
+}
+
+
+export const uploadLabelApi =(data,projectId)=>{
+    let uploadformData = new formData();
+    uploadformData.append('file',data[0]);   
+    return client.post(`/projects/${projectId}/label-upload`,uploadformData,{headers: {'Content-Type': 'multipart/form-data' }});
+}
+
+export const deleteLabelApi =(labelId,projectId)=>{
+    return client.delete(`/projects/${projectId}/labels/${labelId}`)
+}
+
+export const downloadLabelApi = (projectId)=>{
+    return client.get(`projects/${projectId}/labels`)
 }
