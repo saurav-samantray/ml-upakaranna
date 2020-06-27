@@ -208,13 +208,14 @@ class Document(models.Model):
 
 @receiver(post_save, sender=Document)
 def add_linked_annotation(sender, instance, created, **kwargs):
-    logger.info("Document created receiver")
+    #logger.info("Document created receiver")
     if not created:
         return
     #userInstance = instance.user
     projectInstance = instance.project
     if projectInstance:
-        logger.info(projectInstance)
+        pass
+        #logger.info(projectInstance)
 
 
 class TrainingData(models.Model):
@@ -404,12 +405,19 @@ class Dataset(models.Model):
     def __str__(self):
         return self.name
 
-class ClassificationDataset(models.Model):
+class ClassificationDataset(Dataset):
     def get_data_serializer(self):
         raise NotImplementedError()
 
     def get_data_class(self):
         return ClassificationData
+
+class SequenceLabelingDataset(Dataset):
+    def get_data_serializer(self):
+        raise NotImplementedError()
+
+    def get_data_class(self):
+        return SequenceLabelingData
 
 
 class Data(models.Model):
@@ -418,9 +426,13 @@ class Data(models.Model):
     meta = models.TextField(default='{}')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    labels = JSONField()
+    #labels = JSONField()
     def __str__(self):
         return self.text[:50]
 
 class ClassificationData(Data):
     label = models.TextField()
+
+class SequenceLabelingData(Data):
+    labels = JSONField()
+

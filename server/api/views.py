@@ -23,11 +23,11 @@ from celery.result import AsyncResult
 
 from .filters import DocumentFilter
 from .models import Project, Label, Document, RoleMapping, Role, SequenceAnnotation
-from .models import TrainingData
+from .models import TrainingData, Training
 from .permissions import IsProjectAdmin, IsAnnotatorAndReadOnly, IsAnnotator, IsAnnotationApproverAndReadOnly, IsOwnAnnotation, IsAnnotationApprover
 from .serializers import ProjectSerializer, LabelSerializer, DocumentSerializer, UserSerializer
 from .serializers import ProjectPolymorphicSerializer, RoleMappingSerializer, RoleSerializer
-from .serializers import TrainingDataSerializer
+from .serializers import TrainingSerializer, TrainingDataSerializer, TrainingPolymorphicSerializer, DatasetPolymorphicSerializer
 from .utils import CSVParser, ExcelParser, JSONParser, PlainTextParser, CoNLLParser, iterable_to_io
 from .utils import JSONLRenderer
 from .utils import JSONPainter, CSVPainter, CoNLLPainter
@@ -95,13 +95,26 @@ class ModelAPI(APIView):
         available_models = settings.MODEL_MAP.keys()
         return Response(available_models)
 
-class TrainingAPI(APIView):
-    permission_classes = [IsAuthenticated & (IsAnnotationApprover | IsProjectAdmin)]
+class DatasetList(generics.ListCreateAPIView):
+    serializer_class = DatasetPolymorphicSerializer
+    pagination_class = None
+    permission_classes = [IsAuthenticated & IsInProjectReadOnlyOrAdmin]
 
-    def get(self, request, *args, **kwargs):
-        res = AsyncResult(self.request.data.get('task_id',None))
-        #logger.info("Submitted task: "+str(task.task_id)+str(task.status))
-        return Response({"task_id":self.request.data.get('task_id',None),"status":res.status})
+    def get_queryset(self):
+        dataset_type = self.request.query_params.get('type')
+        if dataset_type:
+            return self.request.user.datasets.filter(dataset_type=dataset_type)   
+        return self.request.user.datasets
+
+
+
+class TrainingList(generics.ListCreateAPIView):
+    serializer_class = TrainingPolymorphicSerializer
+    pagination_class = None
+    permission_classes = [IsAuthenticated & IsInProjectReadOnlyOrAdmin]
+
+    def get_queryset(self):
+        return self.request.user.trainings
 
     def post(self, request, *args, **kwargs):
         training_datas = TrainingData.objects.all()
@@ -109,10 +122,18 @@ class TrainingAPI(APIView):
         n_iter = self.request.data.pop('iterations',10)
         logger.info(self.request.data)
         TRAIN_DATA = [(item['fields']['text'],{"entities":item['fields']['labels']}) for item in json.loads(serializers.serialize('json',training_datas))]
-        #logger.info(TRAIN_DATA)
-
+        if len(TRAIN_DATA)==0:
+            logger.warning("Dataset not found. Initiated training on dummy data [ONLY FOR DEV]")
+            TRAIN_DATA = [('This product is awesome and works like magic', {'entities': []}), ('Weightless moisture If youre after highflying hair with plenty of texture its high time you treated yourself to this wellrounded blend of sea salt and honey. Made without the use of heavy butters or oils The Plumps will soften hair without weighing it down leaving behind the subtle woodsy fragrance of cedarwood oil. Its time to plump it up How to use Apply the bar to wet hair after shampooing and massage through. Rinse clean and enjoy your gleaming locks.', {'entities': [(0, 19, 'product'), (138, 146, 'ingredients'), (151, 156, 'ingredients'), (182, 195, 'free_of'), (220, 231, 'applied_for'), (303, 316, 'ingredients'), (370, 378, 'hair_condition'), (417, 428, 'applied_for'), (444, 458, 'applied_for')]}), ('The one bottle has never been used. The bigger bottle was used once. Ultra Nourishing Cleansing treatment Cleansing Treatment. WILLING TO BUNDLE HAVE A QUESTION I REPLY QUICKLY', {'entities': [(19, 34, 'product_condition'), (58, 67, 'product_condition'), (69, 105, 'product'), (106, 125, 'product_features')]}), ('Sealed 16oz Wen Winter White Citrus Cleansing Conditioner wpump.', {'entities': [(7, 11, 'weight'), (12, 15, 'brand'), (16, 57, 'product')]}), ('Moisture repair conditioner', {'entities': [(0, 27, 'product')]})]
+            #return Response({"error_message":"Dataset not found"},status=status.HTTP_400_BAD_REQUEST)    
         task = train.delay(model_name,TRAIN_DATA,n_iter,self.request.user.id,self.request.data)
         return Response({"task_id":task.task_id,"status":task.status})
+
+class TrainingDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Training.objects.all()
+    serializer_class = TrainingSerializer
+    lookup_url_kwarg = 'training_id'
+    permission_classes = [IsAuthenticated & IsInProjectReadOnlyOrAdmin]
 
 class NerAPI(APIView):
     permission_classes = [IsAuthenticated & (IsAnnotationApprover | IsProjectAdmin)]
@@ -240,7 +261,7 @@ class DocumentList(generics.ListCreateAPIView):
 
     def get_queryset(self):
         project = get_object_or_404(Project, pk=self.kwargs['project_id'])
-        logger.info(project)
+        #logger.info(project)
         queryset = project.documents
         if project.randomize_document_order:
             queryset = queryset.annotate(sort_id=F('id') % self.request.user.id).order_by('sort_id')

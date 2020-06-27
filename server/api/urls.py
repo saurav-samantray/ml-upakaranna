@@ -9,7 +9,7 @@ from .views import DocumentList, DocumentDetail
 from .views import AnnotationList, AnnotationDetail
 from .views import TextUploadAPI, TextDownloadAPI, CloudUploadAPI
 from .views import StatisticsAPI
-from .views import ModelAPI, TrainingAPI
+from .views import ModelAPI, TrainingDetail, TrainingList, DatasetList
 from .views import NerAPI
 from .views import RoleMappingList, RoleMappingDetail, Roles
 
@@ -21,16 +21,14 @@ urlpatterns = [
     path('projects', ProjectList.as_view(), name='project_list'),
     path('users', Users.as_view(), name='user_list'),
     path('roles', Roles.as_view(), name='roles'),
-    path('models',
-         ModelAPI.as_view(), name='models'),
-    path('nlp/ner',
-         NerAPI.as_view(), name='ner'),
-    path('nlp/train',
-         TrainingAPI.as_view(), name='train'),
+    path('models', ModelAPI.as_view(), name='models'),
+    path('nlp/ner', NerAPI.as_view(), name='ner'),
+    path('nlp/training/<int:training_id>', TrainingDetail.as_view(), name='training_detail'),
+    path('nlp/datasets',DatasetList.as_view(), name='datasets'),
+    path('nlp/training',TrainingList.as_view(), name='training'),
     path('projects/<int:project_id>', ProjectDetail.as_view(), name='project_detail'),
     path('projects/<str:project_name>', ProjectDetailFromName.as_view(), name='project_detail_from_name'),
-    path('projects/<int:project_id>/statistics',
-         StatisticsAPI.as_view(), name='statistics'),
+    path('projects/<int:project_id>/statistics', StatisticsAPI.as_view(), name='statistics'),
     path('projects/<int:project_id>/labels',
          LabelList.as_view(), name='label_list'),
     path('projects/<int:project_id>/label-upload',

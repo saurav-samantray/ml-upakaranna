@@ -8,7 +8,7 @@ from rest_polymorphic.serializers import PolymorphicSerializer
 from rest_framework.exceptions import ValidationError
 
 
-from .models import Label, Project, Document, RoleMapping, Role, Training, TrainingData
+from .models import Label, Project, Document, RoleMapping, Role, Training, TrainingData, Dataset, Data
 from .models import TextClassificationProject, SequenceLabelingProject, Seq2seqProject
 from .models import DocumentAnnotation, SequenceAnnotation, Seq2seqAnnotation
 
@@ -227,3 +227,19 @@ class TrainingSerializer(serializers.ModelSerializer):
                   'dataset', 'comments', 'created_at',
                   'updated_at','user','training_type',
                   'status','training_loss','total_training_time' )
+
+class TrainingPolymorphicSerializer(PolymorphicSerializer):
+    model_serializer_mapping = {
+        Training: TrainingSerializer
+    }
+
+class DatasetSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Dataset
+        fields = fields = ('id', 'name', 'description','creator','dataset_type', 'created_at', 'updated_at')
+
+class DatasetPolymorphicSerializer(PolymorphicSerializer):
+    model_serializer_mapping = {
+        Dataset: DatasetSerializer
+    }

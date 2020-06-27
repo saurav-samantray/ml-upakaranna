@@ -4,7 +4,7 @@ from .models import Label, Document, Project
 from .models import Role, RoleMapping
 from .models import DocumentAnnotation, SequenceAnnotation, Seq2seqAnnotation
 from .models import TextClassificationProject, SequenceLabelingProject, Seq2seqProject
-from .models import Training, TrainingData
+from .models import Training, TrainingData, Dataset, SequenceLabelingDataset, Data , SequenceLabelingData
 
 
 class LabelAdmin(admin.ModelAdmin):
@@ -15,6 +15,26 @@ class LabelAdmin(admin.ModelAdmin):
 
 class TrainingDataAdmin(admin.ModelAdmin):
     list_display = ('text', 'meta')
+    ordering = ('text',)
+    search_fields = ('text',)
+
+class DatasetAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    ordering = ('name',)
+    search_fields = ('name',)
+
+class SequenceLabelingDatasetAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    ordering = ('name',)
+    search_fields = ('name',)
+
+class DataAdmin(admin.ModelAdmin):
+    list_display = ('text',)
+    ordering = ('text',)
+    search_fields = ('text',)
+
+class SequenceLabelingDataAdmin(admin.ModelAdmin):
+    list_display = ('text',)
     ordering = ('text',)
     search_fields = ('text',)
 
@@ -78,3 +98,7 @@ admin.site.register(Seq2seqProject, ProjectAdmin)
 admin.site.register(Role, RoleAdmin)
 admin.site.register(RoleMapping, RoleMappingAdmin)
 admin.site.register(Training, TrainingAdmin)
+admin.site.register(Dataset, DatasetAdmin)
+admin.site.register(Data, DataAdmin)
+admin.site.register(SequenceLabelingDataset, SequenceLabelingDatasetAdmin)
+admin.site.register(SequenceLabelingData, SequenceLabelingDataAdmin)
