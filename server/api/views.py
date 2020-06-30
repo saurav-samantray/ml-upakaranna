@@ -31,6 +31,7 @@ from .serializers import TrainingSerializer, TrainingDataSerializer, TrainingPol
 from .utils import CSVParser, ExcelParser, JSONParser, PlainTextParser, CoNLLParser, iterable_to_io
 from .utils import JSONLRenderer
 from .utils import JSONPainter, CSVPainter, CoNLLPainter
+from .utils import PlainTextDataPreProcessor, CSVDataPreProcessor
 from .task import train
 
 IsInProjectReadOnlyOrAdmin = (IsAnnotatorAndReadOnly | IsAnnotationApproverAndReadOnly | IsProjectAdmin)
@@ -187,35 +188,44 @@ class StatisticsAPI(APIView):
 
         return Response(response)
 
-    @staticmethod
-    def _get_user_completion_data(annotation_class, annotation_filter):
-        all_annotation_objects  = annotation_class.objects.filter(annotation_filter)
-        set_user_data = collections.defaultdict(set)
-        for ind_obj in all_annotation_objects.values('user__username', 'document__id'):
-            set_user_data[ind_obj['user__username']].add(ind_obj['document__id'])
-        return {i: len(set_user_data[i]) for i in set_user_data}
+class PreProcessing(APIView):
+    parser_classes = (MultiPartParser,)
+    permission_classes = [IsAuthenticated & IsProjectAdmin]
 
+    def post(self, request, *args, **kwargs):
+        if 'file' not in request.data:
+            raise ParseError('Empty content')
 
-    def progress(self, project):
-        docs = project.documents
-        annotation_class = project.get_annotation_class()
-        total = docs.count()
-        annotation_filter = Q(document_id__in=docs.all())
-        user_data = self._get_user_completion_data(annotation_class, annotation_filter)
-        if not project.collaborative_annotation:
-            annotation_filter &= Q(user_id=self.request.user)
-        done = annotation_class.objects.filter(annotation_filter)\
-            .aggregate(Count('document', distinct=True))['document__count']
-        remaining = total - done
-        return {'total': total, 'remaining': remaining, 'user': user_data}
+        self.save_file(
+            user=request.user,
+            file=request.data['file'],
+            file_format=request.data['format']
+        )
 
-    def label_per_data(self, project):
-        annotation_class = project.get_annotation_class()
-        return annotation_class.objects.get_label_per_data(project=project)
+        return Response(status=status.HTTP_201_CREATED)
 
-    def distinct_label_per_data(self, project):
-        annotation_class = project.get_annotation_class()
-        return annotation_class.objects.get_distinct_label_per_data(project=project)
+    @classmethod
+    def save_file(cls, user, file, file_format):
+        parser, processor = cls.select_parser_and_processor(file_format)
+        data = parser.parse(file)
+        processor.execute(data)
+        #storage = project.get_storage(data)
+        #storage.save(user)
+
+    @classmethod
+    def select_parser_and_processor(cls, file_format):
+        if file_format == 'plain':
+            return PlainTextParser(), PlainTextDataPreProcessor()
+        elif file_format == 'csv':
+            return CSVParser() , CSVDataPreProcessor()
+        elif file_format == 'json':
+            return JSONParser(), None
+        elif file_format == 'conll':
+            return CoNLLParser(), None
+        elif file_format == 'excel':
+            return ExcelParser(), None
+        else:
+            raise ValidationError('format {} is invalid.'.format(file_format))
 
 
 class ApproveLabelsAPI(APIView):

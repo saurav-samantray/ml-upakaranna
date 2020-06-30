@@ -196,6 +196,32 @@ class SequenceLabelingStorage(BaseStorage):
                                     'end_offset': end_offset})
         return annotations
 
+class BasePreProcessor():
+    def execute(self,data):
+        raise NotImplementedError()
+
+class PlainTextDataPreProcessor(BasePreProcessor):
+
+    def execute(self,data):
+        self.print_lines(data)
+
+    @classmethod
+    def print_lines(cls,data):
+        for lines in data:
+            for line in lines:
+                logger.info(line)
+                
+
+class CSVDataPreProcessor(BasePreProcessor):
+    def execute(self,data):
+        self.print_lines(data)
+
+    @classmethod
+    def print_lines(cls,data):
+        for lines in data:
+            for line in lines:
+                logger.info(line)
+
 
 class Seq2seqStorage(BaseStorage):
     """Store json for seq2seq.

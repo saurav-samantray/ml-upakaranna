@@ -12,6 +12,7 @@ from .views import StatisticsAPI
 from .views import ModelAPI, TrainingDetail, TrainingList, DatasetList
 from .views import NerAPI
 from .views import RoleMappingList, RoleMappingDetail, Roles
+from .views import PreProcessing
 
 urlpatterns = [
     path('auth-token', obtain_auth_token),
@@ -22,7 +23,8 @@ urlpatterns = [
     path('users', Users.as_view(), name='user_list'),
     path('roles', Roles.as_view(), name='roles'),
     path('models', ModelAPI.as_view(), name='models'),
-    path('nlp/ner', NerAPI.as_view(), name='ner'),
+    path('nlp/ner', NerAPI.as_view(), name='pre_processing'),
+    path('nlp/pre-processing', PreProcessing.as_view(), name='ner'),
     path('nlp/training/<int:training_id>', TrainingDetail.as_view(), name='training_detail'),
     path('nlp/datasets',DatasetList.as_view(), name='datasets'),
     path('nlp/training',TrainingList.as_view(), name='training'),
